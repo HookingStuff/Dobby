@@ -12,7 +12,8 @@ platforms = {
   "macos": ["x86_64", "arm64", "arm64e"],
   "iphoneos": ["arm64", "arm64e"],
   "linux": ["x86", "x86_64", "arm", "arm64"],
-  "android": ["x86", "x86_64", "armeabi-v7a", "arm64-v8a"]
+  "android": ["x86", "x86_64", "armeabi-v7a", "arm64-v8a"],
+  "maccatalyst": ["x86_64", "arm64", "arm64e"]
 }
 
 
@@ -156,6 +157,8 @@ class DarwinPlatformBuilder(PlatformBuilder):
       self.cmake_args += ["-DCMAKE_SYSTEM_NAME=Darwin"]
     elif platform == "iphoneos":
       self.cmake_args += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_DEPLOYMENT_TARGET=9.3"]
+    elif platform == "maccatalyst":
+      self.cmake_args += ["-DCMAKE_SYSTEM_NAME=Darwin", f"-DCMAKE_C_FLAGS=--target={arch}-apple-ios-macabi"]
 
     self.shared_output_name = "libdobby.dylib"
     self.static_output_name = "libdobby.a"
@@ -225,6 +228,8 @@ if __name__ == "__main__":
       builder = DarwinPlatformBuilder(project_dir, library_build_type, platform, arch_)
     elif platform == "iphoneos":
       builder = DarwinPlatformBuilder(project_dir, library_build_type, platform, arch_)
+    elif platform == "maccatalyst":
+      builder = DarwinPlatformBuilder(project_dir, library_build_type, platform, arch_)
     elif platform == "android":
       builder = AndroidPlatformBuilder(args.android_ndk_dir, project_dir, library_build_type, arch_)
     elif platform == "linux":
@@ -237,6 +242,6 @@ if __name__ == "__main__":
     )
     builder.build()
 
-  if platform in ["iphoneos", "macos"] and arch == "all":
+  if platform in ["iphoneos", "macos", "maccatalyst"] and arch == "all":
     DarwinPlatformBuilder.lipo_create_fat(project_dir, platform, builder.shared_output_name)
     DarwinPlatformBuilder.lipo_create_fat(project_dir, platform, builder.static_output_name)
